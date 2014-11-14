@@ -1,10 +1,15 @@
 parameters:
     problematic.acl_manager.class: Problematic\AclManagerBundle\Domain\AclManager
+    problematic.acl_object_identity_retrieval_strategy: Problematic\AclManagerBundle\RetrievalStrategy\AclObjectRetrievalStrategy
 
 services:
     problematic.acl_manager:
         class: %problematic.acl_manager.class%
         arguments:
-            aclProvider: "@security.acl.provider"
-            securityContext: "@security.context"
-            objectIdentityRetrievalStrategy: "@security.acl.object_identity_retrieval_strategy"
+            aclProvider: @security.acl.provider
+            securityContext: @security.context
+            objectIdentityRetrievalStrategy: @problematic.acl.object_identity_retrieval_strategy
+
+    problematic.acl.object_identity_retrieval_strategy:
+        class: %problematic.acl_object_identity_retrieval_strategy%
+        parent: security.acl.object_identity_retrieval_strategy
