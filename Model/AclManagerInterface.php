@@ -2,6 +2,11 @@
 
 namespace Problematic\AclManagerBundle\Model;
 
+use Symfony\Component\Security\Acl\Model\DomainObjectInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Role\RoleInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
 interface AclManagerInterface
 {
     /**
@@ -10,7 +15,8 @@ interface AclManagerInterface
      *
      * @param mixed $domainObject
      * @param int $mask
-     * @param UserInterface | TokenInterface | RoleInterface $securityIdentity if none given, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none given, the current session user will be used
+     * @return self
      */
     public function addObjectPermission($domainObject, $mask, $securityIdentity = null);
 
@@ -20,7 +26,8 @@ interface AclManagerInterface
      *
      * @param mixed $domainObject
      * @param int $mask
-     * @param UserInterface | TokenInterface | RoleInterface $securityIdentity if none given, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none given, the current session user will be used
+     * @return self
      */
     public function addClassPermission($domainObject, $mask, $securityIdentity = null);
 
@@ -30,7 +37,8 @@ interface AclManagerInterface
      * @param mixed $domainObject
      * @param string $field
      * @param int $mask
-     * @param UserInterface | ToekInterface | RoleInterface $securityIdentity if none fiven, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none fiven, the current session user will be used
+     * @return self
      */
     public function addObjectFieldPermission($domainObject, $field, $mask, $securityIdentity = null);
 
@@ -40,7 +48,8 @@ interface AclManagerInterface
      * @param mixed $domainObject
      * @param string $field
      * @param int $mask
-     * @param UserInterface | ToekInterface | RoleInterface $securityIdentity if none fiven, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none fiven, the current session user will be used
+     * @return self
      */
     public function addClassFieldPermission($domainObject, $field, $mask, $securityIdentity = null);
 
@@ -50,7 +59,7 @@ interface AclManagerInterface
      *
      * @param mixed $domainObject
      * @param int $mask
-     * @param UserInterface | TokenInterface | RoleInterface $securityIdentity if none given, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none given, the current session user will be used
      */
     public function setObjectPermission($domainObject, $mask, $securityIdentity = null);
 
@@ -60,7 +69,7 @@ interface AclManagerInterface
      *
      * @param mixed $domainObject
      * @param int $mask
-     * @param UserInterface | TokenInterface | RoleInterface $securityIdentity if none given, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none given, the current session user will be used
      */
     public function setClassPermission($domainObject, $mask, $securityIdentity = null);
 
@@ -70,7 +79,7 @@ interface AclManagerInterface
      * @param mixed $domainObject
      * @param string $field
      * @param int $mask
-     * @param UserInterface | ToekInterface | RoleInterface $securityIdentity if none fiven, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none fiven, the current session user will be used
      */
     public function setObjectFieldPermission($domainObject, $field, $mask, $securityIdentity = null);
 
@@ -80,14 +89,29 @@ interface AclManagerInterface
      * @param mixed $domainObject
      * @param string $field
      * @param int $mask
-     * @param UserInterface | ToekInterface | RoleInterface $securityIdentity if none fiven, the current session user will be used
+     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity if none fiven, the current session user will be used
      */
     public function setClassFieldPermission($domainObject, $field, $mask, $securityIdentity = null);
 
-
-
+    /**
+     * @param mixed  $domainObject
+     * @param int    $mask
+     * @param null   $securityIdentity
+     * @param string $type
+     *
+     * @return self
+     */
     public function revokePermission($domainObject, $mask, $securityIdentity = null, $type = 'object');
 
+    /**
+     * @param mixed       $domainObject
+     * @param string       $field
+     * @param int       $mask
+     * @param null   $securityIdentity
+     * @param string $type
+     *
+     * @return self
+     */
     public function revokeFieldPermission($domainObject, $field, $mask, $securityIdentity = null, $type = 'object');
 
     /**
@@ -116,10 +140,40 @@ interface AclManagerInterface
      */
     public function revokeAllClassFieldPermissions($domainObject, $field, $securityIdentity = null);
 
-    public function deleteAclFor($domainObject);
+    /**
+     * Pre Load Acls for all managed entries, that avoid doctrine to create N extra request.
+     *
+     * @param array $objects
+     * @param array $identities
+     *
+     * @return \SplObjectStorage
+     */
+    public function preloadAcls($objects, $identities = array());
 
+    /**
+     * Delete entry related of item managed via ACL system
+     *
+     * @param string|\DomainObject|DomainObjectInterface $managedItem
+     *
+     * @return self
+     */
+    public function deleteAclFor($managedItem, $type = 'class');
+
+    /**
+     * @param string|string[]     $attributes
+     * @param null|object $object
+     *
+     * @return bool
+     */
     public function isGranted($attributes, $object = null);
 
+    /**
+     * @param string|string[] $masks
+     * @param object $object
+     * @param string $field
+     *
+     * @return bool
+     */
     public function isFieldGranted($attributes, $object, $field);
 
     /**
