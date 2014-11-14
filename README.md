@@ -5,7 +5,7 @@ Add this bundle to your `composer.json` file:
 ```json
 {
     "require": {
-        "problematic/acl-manager-bundle": "dev-master"
+        "gos/acl-manager-bundle": "stable version"
     }
 }
 ```
@@ -61,6 +61,10 @@ $aclManager->revokeAllObjectPermissions($comment, $userEntity);
 
 // Same with class permissions:
 $aclManager->addClassPermission($comment, MaskBuilder::MASK_OWNER, $userEntity);
+//Or:
+$aclManager->addClassPermission(Comment::CLASS, MaskBuilder::MASK_OWNER, $userEntity);
+//Or:
+$aclManager->addClassPermission('Acme\\Bundle\\Entity\\Comment', MaskBuilder::MASK_OWNER, $userEntity);
 $aclManager->setClassPermission($comment, MaskBuilder::MASK_OWNER, $userEntity);
 $aclManager->revokePermission($comment, MaskBUILDER::MASK_DELETE, $userEntity, 'class');
 $aclManager->revokeAllClassPermissions($comment, $userEntity);
