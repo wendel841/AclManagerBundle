@@ -10,4 +10,4 @@ interface AclObjectIdentityRetrievalStrategyInterface extends ObjectIdentityRetr
      * @param string $type
      */
     public function setType($type);
-} 
+}

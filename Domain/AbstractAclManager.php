@@ -2,22 +2,22 @@
 
 namespace Problematic\AclManagerBundle\Domain;
 
+use Problematic\AclManagerBundle\Model\AclManagerInterface;
+use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Problematic\AclManagerBundle\RetrievalStrategy\AclObjectIdentityRetrievalStrategyInterface;
 use Problematic\AclManagerBundle\RetrievalStrategy\AclObjectRetrievalStrategy;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
-use Symfony\Component\Security\Acl\Model\MutableAclProviderInterface;
-use Symfony\Component\Security\Acl\Model\MutableAclInterface;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
-use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
+use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Exception\AclAlreadyExistsException;
+use Symfony\Component\Security\Acl\Model\MutableAclInterface;
+use Symfony\Component\Security\Acl\Model\MutableAclProviderInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Problematic\AclManagerBundle\Model\PermissionContextInterface;
-use Problematic\AclManagerBundle\Model\AclManagerInterface;
 
 /**
  * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)
@@ -26,7 +26,6 @@ use Problematic\AclManagerBundle\Model\AclManagerInterface;
  */
 abstract class AbstractAclManager implements AclManagerInterface
 {
-
     /**
      * @var MutableAclProviderInterface
      */
@@ -78,7 +77,7 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function getObjectIdentityRetrievalStrategy()
     {
-	    return $this->objectIdentityRetrievalStrategy;
+        return $this->objectIdentityRetrievalStrategy;
     }
 
     /**
@@ -115,11 +114,11 @@ abstract class AbstractAclManager implements AclManagerInterface
     /**
      * Returns an instance of PermissionContext. If !$securityIdentity instanceof SecurityIdentityInterface, a new security identity will be created using it
      *
-     * @param string $type
-     * @param string $field
+     * @param  string            $type
+     * @param  string            $field
      * @param $securityIdentity
-     * @param integer $mask
-     * @param boolean $granting
+     * @param  integer           $mask
+     * @param  boolean           $granting
      * @return PermissionContext
      */
     protected function doCreatePermissionContext($type, $field, $securityIdentity, $mask, $granting = true)
@@ -141,7 +140,7 @@ abstract class AbstractAclManager implements AclManagerInterface
     /**
      * Creates a new object instanceof SecurityIdentityInterface from input implementing one of UserInterface, TokenInterface or RoleInterface (or its string representation)
      *
-     * @param mixed $identity
+     * @param  mixed                     $identity
      * @throws \InvalidArgumentException
      *
      * @return SecurityIdentityInterface
@@ -155,9 +154,9 @@ abstract class AbstractAclManager implements AclManagerInterface
         $securityIdentity = null;
         if ($identity instanceof UserInterface) {
             $securityIdentity = UserSecurityIdentity::fromAccount($identity);
-        } else if ($identity instanceof TokenInterface) {
+        } elseif ($identity instanceof TokenInterface) {
             $securityIdentity = UserSecurityIdentity::fromToken($identity);
-        } else if ($identity instanceof RoleInterface || is_string($identity)) {
+        } elseif ($identity instanceof RoleInterface || is_string($identity)) {
             $securityIdentity = new RoleSecurityIdentity($identity);
         }
 
@@ -172,8 +171,8 @@ abstract class AbstractAclManager implements AclManagerInterface
      * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
      *
      * @todo refactor this code to transactionalize ACL updating
-     * @param MutableAclInterface $acl
-     * @param PermissionContextInterface $context
+     * @param  MutableAclInterface        $acl
+     * @param  PermissionContextInterface $context
      * @return void
      */
     protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context, $replaceExisting = false)
@@ -313,7 +312,7 @@ abstract class AbstractAclManager implements AclManagerInterface
     /**
      * @param MutableAclInterface $acl
      * @param string              $type
-     * @param string                    $field
+     * @param string              $field
      *
      * @return mixed
      */

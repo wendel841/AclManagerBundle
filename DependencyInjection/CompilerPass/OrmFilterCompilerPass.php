@@ -22,7 +22,7 @@ class OrmFilterCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         //Compile only if doctrine ORM is loaded
-        if(!$container->has('doctrine.orm.entity_manager')){
+        if (!$container->has('doctrine.orm.entity_manager')) {
             return;
         }
 
@@ -34,4 +34,4 @@ class OrmFilterCompilerPass implements CompilerPassInterface
 
         $container->setDefinition('problematic.acl.orm.filter', $aclFilterDef);
     }
-} 
+}
