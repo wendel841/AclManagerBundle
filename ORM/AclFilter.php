@@ -20,8 +20,11 @@ class AclFilter
      * @param SecurityContextInterface $securityContext
      * @param array                                                    $options
      */
-    public function __construct($doctrine, $securityContext, $options = array())
-    {
+    public function __construct(
+        AbstractManagerRegistry $doctrine,
+        SecurityContextInterface $securityContext,
+        Array $options = array()
+    ) {
         $this->em = $doctrine->getManager();
         $this->securityContext = $securityContext;
         $this->aclConnection = $doctrine->getConnection('default');
@@ -90,7 +93,7 @@ class AclFilter
      * @param integer $mask
      * @return string
      */
-    private function getExtraQuery($classes, $identifiers, $mask)
+    private function getExtraQuery(Array $classes, Array $identifiers, $mask)
     {
         $database = $this->aclConnection->getDatabase();
         $inClasses = implode(",", $classes);
@@ -120,7 +123,7 @@ SELECTQUERY;
      * @param string                     $alias
      * @return array | null
      */
-    protected function getEntityFromAlias($query, $alias = null)
+    protected function getEntityFromAlias(AbstractQuery $query, $alias = null)
     {
         $em = $query->getEntityManager();
         $ast = $query->getAST();
@@ -156,7 +159,7 @@ SELECTQUERY;
      * @param ClassMetadata $metadata
      * @return array
      */
-    protected function getClasses($metadata)
+    protected function getClasses(ClassMetadata $metadata)
     {
         $classes = array();
         foreach ($metadata->subClasses as $subClass) {
