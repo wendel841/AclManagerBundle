@@ -100,3 +100,24 @@ $aclManager->preloadAcls($products);
 
 // ... carry on
 ```
+
+ACL ORM Filter
+-------------
+
+If yout are using Doctrine ORM, you can use our filter to directly retrieve granted rows.
+
+```php
+//Repository class
+
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $qb
+            ->select('client_alias', 'client_user_alias')
+            ->from($this->getEntityName(), 'client_alias')
+            ->leftJoin('client_alias.user', 'client_user_alias')
+        ;
+
+        $query = $this->aclFilter->apply($qb, ['VIEW', 'EDIT'], $currentUser, 'client_alias');
+		return $query->getResult();
+        //Will return only rows where $currentUser is granted VIEW,EDIT on Client (retrieved form table alias client_alias)
+```
+
