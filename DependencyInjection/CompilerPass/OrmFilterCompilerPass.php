@@ -1,11 +1,4 @@
 <?php
-/**
-* This file is part of the AQF.
-* (c) johann (johann_27@hotmail.fr)
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-**/
 
 namespace Problematic\AclManagerBundle\DependencyInjection\CompilerPass;
 
@@ -22,7 +15,7 @@ class OrmFilterCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         //Compile only if doctrine ORM is loaded
-        if(!$container->has('doctrine.orm.entity_manager')){
+        if (!$container->has('doctrine.orm.entity_manager')) {
             return;
         }
 
@@ -34,4 +27,4 @@ class OrmFilterCompilerPass implements CompilerPassInterface
 
         $container->setDefinition('problematic.acl.orm.filter', $aclFilterDef);
     }
-} 
+}

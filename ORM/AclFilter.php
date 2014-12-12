@@ -13,12 +13,14 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class AclFilter
 {
+    const HINT_ACL_EXTRA_CRITERIA = 'acl_extra_criteria';
+
     /**
      * Construct AclFilter
      *
-     * @param AbstractManagerRegistry      $doctrine
+     * @param AbstractManagerRegistry  $doctrine
      * @param SecurityContextInterface $securityContext
-     * @param array                                                    $options
+     * @param array                    $options
      */
     public function __construct(
         AbstractManagerRegistry $doctrine,
@@ -34,22 +36,41 @@ class AclFilter
     /**
      * Apply ACL filter
      *
-     * @param  QueryBuilder | Query     $query
-     * @param  array                                              $permissions
+     * @param  QueryBuilder | Query   $query
+     * @param  array                  $permissions
      * @param  string | UserInterface $identity
-     * @param  string                                             $alias
+     * @param  string                 $alias
      * @return Query
      */
     public function apply(
         $query,
         array $permissions = array('VIEW'),
         $identity = null,
-        $alias = null
+        $alias = null,
+        $extraCriteria = false
     ) {
         if (null === $identity) {
             $token = $this->securityContext->getToken();
             $identity = $token->getUser();
         }
+
+        if(!is_array($extraCriteria)){
+            $extraCriteria = array($extraCriteria);
+        }
+
+        $sqlQueries = [];
+        foreach($extraCriteria as $criteria){
+            if($criteria instanceof QueryBuilder) {
+                $sqlQueries[] = $criteria->getQuery()->getSQL();
+            } elseif($criteria instanceof Query){
+                $sqlQueries[] = $criteria->getSQL();
+            } else{
+                $sqlQueries[] = $criteria;
+            }
+        }
+
+
+        $query->setHint(static::HINT_ACL_EXTRA_CRITERIA, $sqlQueries);
 
         if ($query instanceof QueryBuilder) {
             $query = $this->cloneQuery($query->getQuery());
@@ -69,18 +90,22 @@ class AclFilter
         $metadata = $entity['metadata'];
         $alias = $entity['alias'];
         $table = $metadata->getQuotedTableName($this->em->getConnection()->getDatabasePlatform());
+
         $aclQuery = $this->getExtraQuery(
             $this->getClasses($metadata),
             $this->getIdentifiers($identity),
             $maskBuilder->get()
         );
 
-        $hintAclMetadata =
-            (false !== $query->getHint('acl.metadata')) ? $query->getHint('acl.metadata') : array();
+        $hintAclMetadata = (false !== $query->getHint('acl.metadata'))
+            ? $query->getHint('acl.metadata')
+            : array()
+        ;
+
         $hintAclMetadata[] = array('query' => $aclQuery, 'table' => $table, 'alias' => $alias);
 
         $query->setHint('acl.metadata', $hintAclMetadata);
-        $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER,$this->aclWalker);
+        $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, $this->aclWalker);
 
         return $query;
     }
@@ -88,9 +113,10 @@ class AclFilter
     /**
      * Get ACL filter SQL
      *
-     * @param array   $classes
-     * @param array   $identifiers
-     * @param integer $mask
+     * @param  array   $classes
+     * @param  array   $identifiers
+     * @param  integer $mask
+     * @param array $extraCriteria
      * @return string
      */
     private function getExtraQuery(Array $classes, Array $identifiers, $mask)
@@ -119,9 +145,9 @@ SELECTQUERY;
     /**
      * Resolve DQL alias into class metadata
      *
-     * @param AbstractQuery $query
-     * @param string                     $alias
-     * @return array | null
+     * @param  AbstractQuery $query
+     * @param  string        $alias
+     * @return array         | null
      */
     protected function getEntityFromAlias(AbstractQuery $query, $alias = null)
     {
@@ -131,10 +157,9 @@ SELECTQUERY;
         foreach ($fromClause->identificationVariableDeclarations as $root) {
             $className = $root->rangeVariableDeclaration->abstractSchemaName;
             $classAlias = $root->rangeVariableDeclaration->aliasIdentificationVariable;
-            if (($classAlias == $alias)||(null === $alias)) {
-
+            if (($classAlias == $alias) || (null === $alias)) {
                 return array('alias' => $classAlias,
-                    'metadata' => $em->getClassMetadata($className));
+                    'metadata' => $em->getClassMetadata($className), );
             } else {
                 foreach ($root->joins as $join) {
                     $joinAlias = $join->joinAssociationDeclaration->aliasIdentificationVariable;
@@ -144,19 +169,17 @@ SELECTQUERY;
                         $joinName = $metadata->associationMappings[$joinField]['targetEntity'];
 
                         return array('alias' => $joinAlias,
-                            'metadata' => $em->getClassMetadata($joinName));
+                            'metadata' => $em->getClassMetadata($joinName), );
                     }
                 }
             }
         }
-
-        return null;
     }
 
     /**
      * Get ACL compatible classes for specified class metadata
      *
-     * @param ClassMetadata $metadata
+     * @param  ClassMetadata $metadata
      * @return array
      */
     protected function getClasses(ClassMetadata $metadata)
@@ -173,7 +196,7 @@ SELECTQUERY;
     /**
      * Get security identifiers associated with specified identity
      *
-     * @param UserInterface | string $identity
+     * @param  UserInterface | string $identity
      * @return array
      */
     protected function getIdentifiers($identity)
@@ -192,7 +215,7 @@ SELECTQUERY;
             $resolvedRoles[] = '"' . $role . '"';
             $resolvedRoles = array_merge($resolvedRoles, $this->resolveRoles($role));
         }
-        $identifiers = array_merge($userClass,array_unique($resolvedRoles));
+        $identifiers = array_merge($userClass, array_unique($resolvedRoles));
 
         return $identifiers;
     }
@@ -200,7 +223,7 @@ SELECTQUERY;
     /**
      * Clone query
      *
-     * @param AbstractQuery $query
+     * @param  AbstractQuery $query
      * @return AbstractQuery
      */
     protected function cloneQuery(AbstractQuery $query)
@@ -227,7 +250,7 @@ SELECTQUERY;
         if (array_key_exists($role, $hierarchy)) {
             foreach ($hierarchy[$role] as $parent_role) {
                 $roles[] = '"' . $parent_role . '"';
-                $roles = array_merge($roles,$this->resolveRoles($parent_role));
+                $roles = array_merge($roles, $this->resolveRoles($parent_role));
             }
         }
 

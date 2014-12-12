@@ -9,12 +9,13 @@ class AclWalker extends SqlWalker
     /**
      * @param $fromClause
      *
-     * @return string
+     * @return string 
      */
     public function walkFromClause($fromClause)
     {
         $sql = parent::walkFromClause($fromClause);
         $aclMetadata = $this->getQuery()->getHint('acl.metadata');
+        $extraQueries = $this->getQuery()->getHint(AclFilter::HINT_ACL_EXTRA_CRITERIA);
 
         if ($aclMetadata) {
             foreach ($aclMetadata as $key => $metadata) {
@@ -22,10 +23,11 @@ class AclWalker extends SqlWalker
                 $query = $metadata['query'];
                 $table = $metadata['table'];
                 $tableAlias = $this->getSQLTableAlias($table, $alias);
+                $this->parseExtraQueries($extraQueries, $tableAlias);
                 $aclAlias = 'ta' . $key . '_';
 
                 $aclSql = <<<ACL_SQL
-INNER JOIN ({$query}) {$aclAlias} ON {$tableAlias}.id = {$aclAlias}.id
+INNER JOIN ({$query}) {$aclAlias} ON ({$tableAlias}.id = {$aclAlias}.id OR ({$this->parseExtraQueries($extraQueries, $tableAlias)}))
 ACL_SQL;
                 $sql .= ' ' . $aclSql;
             }
@@ -33,4 +35,21 @@ ACL_SQL;
 
         return $sql;
     }
-} 
+
+    /**
+     * @param array $extraQueries
+     * @param string $tableAlias
+     *
+     * @return array
+     */
+    protected function parseExtraQueries(Array $extraQueries, $tableAlias)
+    {
+        $clause = array();
+
+        foreach($extraQueries as $query){
+            $clause[] = $tableAlias.'.id IN(('.$query.'))';
+        }
+
+        return implode(' OR ', $clause);
+    }
+}

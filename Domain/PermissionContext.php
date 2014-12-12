@@ -2,13 +2,12 @@
 
 namespace Problematic\AclManagerBundle\Domain;
 
-use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 
 class PermissionContext implements PermissionContextInterface
 {
-
     protected $permissionMask;
     protected $securityIdentity;
     protected $permissionType;
@@ -17,7 +16,6 @@ class PermissionContext implements PermissionContextInterface
 
     public function __construct()
     {
-
     }
 
     /**
@@ -79,9 +77,9 @@ class PermissionContext implements PermissionContextInterface
             $ace->getMask() === $this->getMask();
     }
 
-    public function hasDifferentPermission(AuditableEntryInterface $ace){
+    public function hasDifferentPermission(AuditableEntryInterface $ace)
+    {
         return $ace->getSecurityIdentity() == $this->getSecurityIdentity() &&
             $ace->isGranting() === $this->isGranting() && $ace->getMask() !== $this->getMask();
     }
-
 }

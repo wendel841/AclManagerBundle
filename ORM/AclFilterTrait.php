@@ -1,7 +1,6 @@
 <?php
 namespace Problematic\AclManagerBundle\ORM;
 
-
 trait AclFilterTrait
 {
     /**
