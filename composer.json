@@ -27,5 +27,8 @@
     },
     "autoload": {
         "psr-4": { "Problematic\\AclManagerBundle\\": "" }
+    },
+    "require-dev": {
+        "doctrine/orm": "~2.4"
     }
 }
