@@ -13,6 +13,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class AclFilter
 {
+    const HINT_ACL_EXTRA_CRITERIA = 'acl_extra_criteria';
+
     /**
      * Construct AclFilter
      *
@@ -44,12 +46,31 @@ class AclFilter
         $query,
         array $permissions = array('VIEW'),
         $identity = null,
-        $alias = null
+        $alias = null,
+        $extraCriteria = false
     ) {
         if (null === $identity) {
             $token = $this->securityContext->getToken();
             $identity = $token->getUser();
         }
+
+        if(!is_array($extraCriteria)){
+            $extraCriteria = array($extraCriteria);
+        }
+
+        $sqlQueries = [];
+        foreach($extraCriteria as $criteria){
+            if($criteria instanceof QueryBuilder) {
+                $sqlQueries[] = $criteria->getQuery()->getSQL();
+            } elseif($criteria instanceof Query){
+                $sqlQueries[] = $criteria->getSQL();
+            } else{
+                $sqlQueries[] = $criteria;
+            }
+        }
+
+
+        $query->setHint(static::HINT_ACL_EXTRA_CRITERIA, $sqlQueries);
 
         if ($query instanceof QueryBuilder) {
             $query = $this->cloneQuery($query->getQuery());
@@ -69,14 +90,18 @@ class AclFilter
         $metadata = $entity['metadata'];
         $alias = $entity['alias'];
         $table = $metadata->getQuotedTableName($this->em->getConnection()->getDatabasePlatform());
+
         $aclQuery = $this->getExtraQuery(
             $this->getClasses($metadata),
             $this->getIdentifiers($identity),
             $maskBuilder->get()
         );
 
-        $hintAclMetadata =
-            (false !== $query->getHint('acl.metadata')) ? $query->getHint('acl.metadata') : array();
+        $hintAclMetadata = (false !== $query->getHint('acl.metadata'))
+            ? $query->getHint('acl.metadata')
+            : array()
+        ;
+
         $hintAclMetadata[] = array('query' => $aclQuery, 'table' => $table, 'alias' => $alias);
 
         $query->setHint('acl.metadata', $hintAclMetadata);
@@ -91,6 +116,7 @@ class AclFilter
      * @param  array   $classes
      * @param  array   $identifiers
      * @param  integer $mask
+     * @param array $extraCriteria
      * @return string
      */
     private function getExtraQuery(Array $classes, Array $identifiers, $mask)
@@ -148,8 +174,6 @@ SELECTQUERY;
                 }
             }
         }
-
-        return;
     }
 
     /**
