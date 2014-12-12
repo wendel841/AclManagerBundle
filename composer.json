@@ -26,6 +26,6 @@
         "doctrine/couchdb-odm-bundle": "*"
     },
     "autoload": {
-        "psr-4": { "Problematic\\AclManagerBundle": "" }
-    },
+        "psr-4": { "Problematic\\AclManagerBundle\\": "" }
+    }
 }

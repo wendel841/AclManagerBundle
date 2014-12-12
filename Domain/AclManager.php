@@ -2,10 +2,9 @@
 
 namespace Problematic\AclManagerBundle\Domain;
 
+use Symfony\Component\Security\Acl\Exception\NoAceFoundException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleInterface;
-use Symfony\Component\Security\Core\SecurityContext;
-use Symfony\Component\Security\Acl\Exception\NoAceFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class AclManager extends AbstractAclManager
@@ -51,18 +50,18 @@ class AclManager extends AbstractAclManager
     }
 
     /**
-     * @param mixed $domainObject
-     * @param string $field
-     * @param int   $mask
-     * @param UserInterface|TokenInterface|RoleInterface $securityIdentity
-     * @param string $type
-     * @param string $field
-     * @param boolean $replace_existing
+     * @param  mixed                                      $domainObject
+     * @param  string                                     $field
+     * @param  int                                        $mask
+     * @param  UserInterface|TokenInterface|RoleInterface $securityIdentity
+     * @param  string                                     $type
+     * @param  string                                     $field
+     * @param  boolean                                    $replace_existing
      * @return AbstractAclManager
      */
     protected function addPermission($domainObject, $field, $mask, $securityIdentity = null, $type = 'object', $replace_existing = false)
     {
-        if(is_null($securityIdentity)){
+        if (is_null($securityIdentity)) {
             $securityIdentity = $this->getUser();
         }
 
@@ -81,11 +80,11 @@ class AclManager extends AbstractAclManager
     }
 
     /**
-     * @param mixed $domainObject
-     * @param int   $mask
-     * @param UserInterface | TokenInterface | RoleInterface $securityIdentity
-     * @param string $type
-     * @param string $field
+     * @param  mixed                                                   $domainObject
+     * @param  int                                                     $mask
+     * @param  UserInterface | TokenInterface | RoleInterface          $securityIdentity
+     * @param  string                                                  $type
+     * @param  string                                                  $field
      * @return \Problematic\AclManagerBundle\Domain\AbstractAclManager
      */
     protected function setPermission($domainObject, $field, $mask, $securityIdentity = null, $type = 'object')
@@ -132,7 +131,7 @@ class AclManager extends AbstractAclManager
      */
     public function revokePermission($domainObject, $mask, $securityIdentity = null, $type = 'object')
     {
-        if(is_null($securityIdentity)){
+        if (is_null($securityIdentity)) {
             $securityIdentity = $this->getUser();
         }
 
@@ -154,7 +153,7 @@ class AclManager extends AbstractAclManager
      */
     public function revokeFieldPermission($domainObject, $field, $mask, $securityIdentity = null, $type = 'object')
     {
-        if(is_null($securityIdentity)){
+        if (is_null($securityIdentity)) {
             $securityIdentity = $this->getUser();
         }
 
@@ -204,8 +203,8 @@ class AclManager extends AbstractAclManager
     }
 
     /**
-     * @param mixed       $domainObject
-     * @param string       $field
+     * @param mixed  $domainObject
+     * @param string $field
      * @param null   $securityIdentity
      * @param string $type
      *
@@ -213,7 +212,7 @@ class AclManager extends AbstractAclManager
      */
     protected function revokeAllPermissions($domainObject, $field, $securityIdentity = null, $type = 'object')
     {
-        if(is_null($securityIdentity)){
+        if (is_null($securityIdentity)) {
             $securityIdentity = $this->getUser();
         }
 
@@ -286,7 +285,7 @@ class AclManager extends AbstractAclManager
 
         try {
             return $acl->isFieldGranted($field, $masks, array(
-                $this->doCreateSecurityIdentity( $this->getUser() )
+                $this->doCreateSecurityIdentity($this->getUser()),
             ));
         } catch (NoAceFoundException $ex) {
             return false;
@@ -301,7 +300,7 @@ class AclManager extends AbstractAclManager
         $token = $this->getSecurityContext()->getToken();
 
         if (null === $token) {
-            return null;
+            return;
         }
 
         $user = $token->getUser();
