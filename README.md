@@ -104,7 +104,7 @@ $aclManager->preloadAcls($products);
 ACL ORM Filter
 -------------
 
-If yout are using Doctrine ORM, you can use our filter to directly retrieve granted rows.
+If you are using Doctrine ORM, you can use our filter to directly retrieve granted rows.
 
 ```php
 //Repository class
