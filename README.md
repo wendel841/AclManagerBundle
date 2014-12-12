@@ -120,4 +120,3 @@ If you are using Doctrine ORM, you can use our filter to directly retrieve grant
 		return $query->getResult();
         //Will return only rows where $currentUser is granted VIEW,EDIT on Client (retrieved form table alias client_alias)
 ```
-
