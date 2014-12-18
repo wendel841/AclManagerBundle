@@ -2,10 +2,10 @@
 
 namespace Problematic\AclManagerBundle\Domain;
 
+use Doctrine\DBAL\Driver\Connection;
 use Problematic\AclManagerBundle\Model\AclManagerInterface;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Problematic\AclManagerBundle\RetrievalStrategy\AclObjectIdentityRetrievalStrategyInterface;
-use Problematic\AclManagerBundle\RetrievalStrategy\AclObjectRetrievalStrategy;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
@@ -42,18 +42,26 @@ abstract class AbstractAclManager implements AclManagerInterface
     protected $objectIdentityRetrievalStrategy;
 
     /**
-     * @param MutableAclProviderInterface $aclProvider
-     * @param SecurityContextInterface    $securityContext
-     * @param AclObjectRetrievalStrategy  $objectIdentityRetrievalStrategy
+     * @var Connection
+     */
+    protected $connection;
+
+    /**
+     * @param MutableAclProviderInterface                 $aclProvider
+     * @param SecurityContextInterface                    $securityContext
+     * @param AclObjectIdentityRetrievalStrategyInterface $objectIdentityRetrievalStrategy
+     * @param Connection                                  $connection
      */
     public function __construct(
         MutableAclProviderInterface $aclProvider,
         SecurityContextInterface $securityContext,
-        AclObjectIdentityRetrievalStrategyInterface $objectIdentityRetrievalStrategy
+        AclObjectIdentityRetrievalStrategyInterface $objectIdentityRetrievalStrategy,
+        Connection $connection
     ) {
         $this->aclProvider = $aclProvider;
         $this->securityContext = $securityContext;
         $this->objectIdentityRetrievalStrategy = $objectIdentityRetrievalStrategy;
+        $this->connection = $connection;
     }
 
     /**
@@ -170,7 +178,6 @@ abstract class AbstractAclManager implements AclManagerInterface
     /**
      * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
      *
-     * @todo refactor this code to transactionalize ACL updating
      * @param  MutableAclInterface        $acl
      * @param  PermissionContextInterface $context
      * @return void
@@ -189,39 +196,49 @@ abstract class AbstractAclManager implements AclManagerInterface
         $size = count($aceCollection) - 1;
         reset($aceCollection);
 
-        for ($i = $size; $i >= 0; $i--) {
-            if (true === $replaceExisting) {
-                // Replace all existing permissions with the new one
-                if ($context->hasDifferentPermission($aceCollection[$i])) {
-                    // The ACE was found but with a different permission. Update it.
-                    if (is_null($field)) {
-                        $acl->{"update{$type}Ace"}($i, $context->getMask());
-                    } else {
-                        $acl->{"update{$type}FieldAce"}($i, $field, $context->getMask());
-                    }
+        $this->connection->beginTransaction();
 
-                    //No need to proceed further because the acl is updated
-                    return;
+        try{
+            for ($i = $size; $i >= 0; $i--) {
+                if (true === $replaceExisting) {
+                    // Replace all existing permissions with the new one
+                    if ($context->hasDifferentPermission($aceCollection[$i])) {
+                        // The ACE was found but with a different permission. Update it.
+                        if (is_null($field)) {
+                            $acl->{"update{$type}Ace"}($i, $context->getMask());
+                        } else {
+                            $acl->{"update{$type}FieldAce"}($i, $field, $context->getMask());
+                        }
+
+                        //No need to proceed further because the acl is updated
+                        return;
+                    } else {
+                        if ($context->equals($aceCollection[$i])) {
+                            // The exact same ACE was found. Nothing to do.
+                            return;
+                        }
+                    }
                 } else {
                     if ($context->equals($aceCollection[$i])) {
                         // The exact same ACE was found. Nothing to do.
                         return;
                     }
                 }
-            } else {
-                if ($context->equals($aceCollection[$i])) {
-                    // The exact same ACE was found. Nothing to do.
-                    return;
-                }
             }
-        }
-        //If we come this far means we have to insert ace
-        if (is_null($field)) {
-            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(),
+
+            //If we come this far means we have to insert ace
+            if (is_null($field)) {
+                $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(),
                     $context->getMask(), 0, $context->isGranting());
-        } else {
-            $acl->{"insert{$type}FieldAce"}($field, $context->getSecurityIdentity(),
+            } else {
+                $acl->{"insert{$type}FieldAce"}($field, $context->getSecurityIdentity(),
                     $context->getMask(), 0, $context->isGranting());
+            }
+
+            $this->connection->commit();
+        } catch(\Exception $e){
+            $this->connection->rollBack();
+            throw $e;
         }
     }
 
