@@ -197,7 +197,7 @@ abstract class AbstractAclManager implements AclManagerInterface
                     if (is_null($field)) {
                         $acl->{"update{$type}Ace"}($i, $context->getMask());
                     } else {
-                        $acl->{"update{$type}FieldAce"}($id, $field, $context->getMask());
+                        $acl->{"update{$type}FieldAce"}($i, $field, $context->getMask());
                     }
 
                     //No need to proceed further because the acl is updated
