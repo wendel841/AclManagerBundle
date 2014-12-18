@@ -4,6 +4,7 @@ namespace Problematic\AclManagerBundle\Domain;
 
 use Symfony\Component\Security\Acl\Exception\NoAceFoundException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -305,6 +306,6 @@ class AclManager extends AbstractAclManager
 
         $user = $token->getUser();
 
-        return (is_object($user)) ? $user : 'IS_AUTHENTICATED_ANONYMOUSLY';
+        return (is_object($user)) ? $user : AuthenticatedVoter::IS_AUTHENTICATED_ANONYMOUSLY;
     }
 }
