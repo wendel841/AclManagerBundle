@@ -26,5 +26,6 @@ class OrmFilterCompilerPass implements CompilerPassInterface
         ]);
 
         $container->setDefinition('problematic.acl.orm.filter', $aclFilterDef);
+
     }
 }

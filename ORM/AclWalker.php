@@ -26,12 +26,20 @@ class AclWalker extends SqlWalker
                 $this->parseExtraQueries($extraQueries, $tableAlias);
                 $aclAlias = 'ta' . $key . '_';
 
-                $aclSql = <<<ACL_SQL
+				if($extraQueries){
+					$aclSql = <<<ACL_SQL
 INNER JOIN ({$query}) {$aclAlias} ON ({$tableAlias}.id = {$aclAlias}.id OR ({$this->parseExtraQueries($extraQueries, $tableAlias)}))
 ACL_SQL;
+				}else{
+                $aclSql = <<<ACL_SQL
+INNER JOIN ({$query}) {$aclAlias} ON ({$tableAlias}.id = {$aclAlias}.id )
+ACL_SQL;
+				}
+
                 $sql .= ' ' . $aclSql;
             }
         }
+
 
         return $sql;
     }

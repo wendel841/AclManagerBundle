@@ -54,7 +54,7 @@ class AclFilter
             $identity = $token->getUser();
         }
 
-        if(!is_array($extraCriteria)){
+        if($extraCriteria && !is_array($extraCriteria)){
             $extraCriteria = array($extraCriteria);
         }
 
@@ -68,7 +68,6 @@ class AclFilter
                 $sqlQueries[] = $criteria;
             }
         }
-
 
         $query->setHint(static::HINT_ACL_EXTRA_CRITERIA, $sqlQueries);
 

@@ -1,5 +1,5 @@
 {
-    "name": "nuxia/acl-manager-bundle",
+    "name": "gos/acl-manager-bundle",
     "type": "symfony-bundle",
     "description": "ACL Manager for Symfony2",
     "keywords": ["ACL"],
@@ -13,7 +13,11 @@
         {
             "name": "Nuxia",
             "email": "contact@nuxia.fr"
-        }
+        },
+		{
+            "name": "Genar",
+            "email": "genar@acs.li"
+		}
     ],
     "require": {
         "php": ">=5.4",
