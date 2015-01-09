@@ -59,13 +59,15 @@ class AclFilter
         }
 
         $sqlQueries = [];
-        foreach($extraCriteria as $criteria){
-            if($criteria instanceof QueryBuilder) {
-                $sqlQueries[] = $criteria->getQuery()->getSQL();
-            } elseif($criteria instanceof Query){
-                $sqlQueries[] = $criteria->getSQL();
-            } else{
-                $sqlQueries[] = $criteria;
+        if($extraCriteria){
+            foreach($extraCriteria as $criteria){
+                if($criteria instanceof QueryBuilder) {
+                    $sqlQueries[] = $criteria->getQuery()->getSQL();
+                } elseif($criteria instanceof Query){
+                    $sqlQueries[] = $criteria->getSQL();
+                } else{
+                    $sqlQueries[] = $criteria;
+                }
             }
         }
 
