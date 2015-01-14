@@ -71,7 +71,6 @@ class AclFilter
             }
         }
 
-        $query->setHint(static::HINT_ACL_EXTRA_CRITERIA, $sqlQueries);
 
         if ($query instanceof QueryBuilder) {
             $query = $this->cloneQuery($query->getQuery());
@@ -80,6 +79,9 @@ class AclFilter
         } else {
             throw new \Exception();
         }
+
+        if (!$query instanceof QueryBuilder) 
+            $query->setHint(static::HINT_ACL_EXTRA_CRITERIA, $sqlQueries);
 
         $maskBuilder = new MaskBuilder();
         foreach ($permissions as $permission) {
@@ -97,6 +99,7 @@ class AclFilter
             $this->getIdentifiers($identity),
             $maskBuilder->get()
         );
+
 
         $hintAclMetadata = (false !== $query->getHint('acl.metadata'))
             ? $query->getHint('acl.metadata')
@@ -123,16 +126,21 @@ class AclFilter
     private function getExtraQuery(Array $classes, Array $identifiers, $mask)
     {
         $database = $this->aclConnection->getDatabase();
+        if($database == $this->em->getConnection()->getDatabase())
+            $database = '';
+        else
+            $database = $database.'.';
+
         $inClasses = implode(",", $classes);
         $inIdentifiers = implode(",", $identifiers);
 
         $query = <<<SELECTQUERY
-SELECT DISTINCT o.object_identifier as id FROM {$database}.acl_object_identities as o
-    INNER JOIN {$database}.acl_classes c ON c.id = o.class_id
-    LEFT JOIN {$database}.acl_entries e ON (
+SELECT DISTINCT o.object_identifier as id FROM {$database}acl_object_identities as o
+    INNER JOIN {$database}acl_classes c ON c.id = o.class_id
+    LEFT JOIN {$database}acl_entries e ON (
         e.class_id = o.class_id AND (e.object_identity_id = o.id OR {$this->aclConnection->getDatabasePlatform()->getIsNullExpression('e.object_identity_id')})
     )
-    LEFT JOIN {$database}.acl_security_identities s ON (
+    LEFT JOIN {$database}acl_security_identities s ON (
         s.id = e.security_identity_id
     )
     WHERE c.class_type IN ({$inClasses})

@@ -1,9 +1,9 @@
 {
-    "name": "gos/acl-manager-bundle",
+    "name": "gtrias/acl-manager-bundle",
     "type": "symfony-bundle",
     "description": "ACL Manager for Symfony2",
     "keywords": ["ACL"],
-    "homepage": "https://github.com/nuxia/AclManagerBundle",
+    "homepage": "https://github.com/gtrias/AclManagerBundle",
     "license": "MIT",
     "authors": [
         {
