@@ -80,7 +80,7 @@ class AclFilter
             throw new \Exception();
         }
 
-        if (!$query instanceof QueryBuilder) 
+        if (!$query instanceof QueryBuilder)
             $query->setHint(static::HINT_ACL_EXTRA_CRITERIA, $sqlQueries);
 
         $maskBuilder = new MaskBuilder();
@@ -100,6 +100,8 @@ class AclFilter
             $maskBuilder->get()
         );
 
+        // Double slash when sqlite issue
+        // ld($this->getClasses($metadata));
 
         $hintAclMetadata = (false !== $query->getHint('acl.metadata'))
             ? $query->getHint('acl.metadata')
@@ -185,6 +187,21 @@ SELECTQUERY;
         }
     }
 
+
+    /**
+     * Gets replacing slashes dependant on database engine
+     */
+    private function getReplSlash()
+    {
+         // DBMS detection
+        $repl_slash = '\\\\';
+        if ($this->em->getConnection()->getDatabasePlatform() instanceOf \Doctrine\DBAL\Platforms\SqlitePlatform) {
+            $repl_slash = '\\';
+        }
+
+        return $repl_slash;
+    }
+
     /**
      * Get ACL compatible classes for specified class metadata
      *
@@ -193,11 +210,13 @@ SELECTQUERY;
      */
     protected function getClasses(ClassMetadata $metadata)
     {
+        $repl_slash = $this->getReplSlash();
+
         $classes = array();
         foreach ($metadata->subClasses as $subClass) {
-            $classes[] = '"' . str_replace('\\', '\\\\', $subClass) . '"';
+            $classes[] = '"' . str_replace("\\", $repl_slash, $subClass) . '"';
         }
-        $classes[] = '"' . str_replace('\\', '\\\\', $metadata->name) . '"';
+        $classes[] = '"' . str_replace("\\", $repl_slash, $metadata->name) . '"';
 
         return $classes;
     }
@@ -210,10 +229,12 @@ SELECTQUERY;
      */
     protected function getIdentifiers($identity)
     {
+        $repl_slash = $this->getReplSlash();
+
         $userClass = array();
         if ($identity instanceof UserInterface) {
             $roles = $identity->getRoles();
-            $userClass[] = '"' . str_replace('\\', '\\\\', get_class($identity)) . '-' . $identity->getUserName() . '"';
+            $userClass[] = '"' . str_replace('\\', $repl_slash, get_class($identity)) . '-' . $identity->getUserName() . '"';
         } elseif (is_string($identity)) {
             $roles = array($identity);
         } else {
