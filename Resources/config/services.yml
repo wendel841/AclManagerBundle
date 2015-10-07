@@ -14,3 +14,7 @@ services:
     problematic.acl.object_identity_retrieval_strategy:
         class: %problematic.acl_object_identity_retrieval_strategy%
         parent: security.acl.object_identity_retrieval_strategy
+
+    # Overriding this service to proper identify objects of class doctrine proxy
+    security.acl.object_identity_retrieval_strategy:
+        class: Problematic\AclManagerBundle\RetrievalStrategy\DoctrineProxyIdRetrievalStrategy
