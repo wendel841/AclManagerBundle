@@ -10,6 +10,8 @@ use Symfony\Component\Security\Acl\Domain\ObjectIdentityRetrievalStrategy;
  */
 class AclObjectRetrievalStrategy extends ObjectIdentityRetrievalStrategy implements AclObjectIdentityRetrievalStrategyInterface
 {
+	const PROXY_CLASS_NAME = 'Doctrine\ORM\Proxy\Proxy';
+
     /**
      * @var string
      */
@@ -30,11 +32,29 @@ class AclObjectRetrievalStrategy extends ObjectIdentityRetrievalStrategy impleme
      */
     public function getObjectIdentity($domainObject)
     {
+        if ($domainObject instanceof DomainObjectInterface) {
+
+            return new ObjectIdentity($domainObject->getObjectIdentifier(), $this->getObjectClass($domainObject));
+        } elseif (method_exists($domainObject, 'getId')) {
+
+            return new ObjectIdentity($domainObject->getId(), $this->getObjectClass($domainObject));
+        }
+
+
         //We allowed to retrieve objectIdentity from string !
         if (is_string($domainObject)) {
             return new ObjectIdentity($this->type, $domainObject);
         }
 
         return parent::getObjectIdentity($domainObject);
+    }
+
+    protected function getObjectClass($domainObject){
+
+        if(in_array(self::PROXY_CLASS_NAME, class_implements($domainObject))){
+            return get_parent_class($domainObject);
+        }
+
+        return get_class($domainObject);
     }
 }
