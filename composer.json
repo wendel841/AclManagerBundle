@@ -14,15 +14,13 @@
             "name": "Nuxia",
             "email": "contact@nuxia.fr"
         },
-		{
+        {
             "name": "Genar",
             "email": "genar@acs.li"
-		}
+        }
     ],
     "require": {
-        "php": ">=5.4",
-        "symfony/framework-bundle": "2.*",
-        "symfony/security-bundle": "2.*"
+        "php": ">=5.4"
     },
     "suggest": {
         "symfony/doctrine-bundle": "*",
