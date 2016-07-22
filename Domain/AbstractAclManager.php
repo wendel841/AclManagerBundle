@@ -16,7 +16,7 @@ use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleInterface;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -32,9 +32,9 @@ abstract class AbstractAclManager implements AclManagerInterface
     protected $aclProvider;
 
     /**
-     * @var SecurityContextInterface
+     * @var TokenStorage
      */
-    protected $securityContext;
+    protected $tokenStorage;
 
     /**
      * @var AclObjectIdentityRetrievalStrategyInterface
@@ -48,18 +48,18 @@ abstract class AbstractAclManager implements AclManagerInterface
 
     /**
      * @param MutableAclProviderInterface                 $aclProvider
-     * @param SecurityContextInterface                    $securityContext
+     * @param TokenStorage                    $tokenStorage
      * @param AclObjectIdentityRetrievalStrategyInterface $objectIdentityRetrievalStrategy
      * @param Connection                                  $connection
      */
     public function __construct(
         MutableAclProviderInterface $aclProvider,
-        SecurityContextInterface $securityContext,
+        TokenStorage $tokenStorage,
         AclObjectIdentityRetrievalStrategyInterface $objectIdentityRetrievalStrategy,
         Connection $connection
     ) {
         $this->aclProvider = $aclProvider;
-        $this->securityContext = $securityContext;
+        $this->tokenStorage = $tokenStorage;
         $this->objectIdentityRetrievalStrategy = $objectIdentityRetrievalStrategy;
         $this->connection = $connection;
     }
@@ -73,11 +73,11 @@ abstract class AbstractAclManager implements AclManagerInterface
     }
 
     /**
-     * @return SecurityContextInterface
+     * @return TokenStorage
      */
     protected function getSecurityContext()
     {
-        return $this->securityContext;
+        return $this->tokenStorage;
     }
 
     /**
