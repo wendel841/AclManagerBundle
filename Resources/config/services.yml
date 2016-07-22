@@ -7,7 +7,7 @@ services:
         class: %problematic.acl_manager.class%
         arguments:
             aclProvider: "@security.acl.provider"
-            securityContext: "@security.context"
+            securityContext: "@security.token_storage"
             objectIdentityRetrievalStrategy: "@problematic.acl.object_identity_retrieval_strategy"
             connection: "@security.acl.dbal.connection"
 
