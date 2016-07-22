@@ -8,7 +8,7 @@ use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Acl\Permission\MaskBuilder;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\TokenStorageInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class AclFilter
@@ -19,16 +19,16 @@ class AclFilter
      * Construct AclFilter
      *
      * @param AbstractManagerRegistry  $doctrine
-     * @param SecurityContextInterface $securityContext
+     * @param TokenStorageInterface $tokenStorage
      * @param array                    $options
      */
     public function __construct(
         AbstractManagerRegistry $doctrine,
-        SecurityContextInterface $securityContext,
+        TokenStorageInterface $tokenStorage,
         Array $options = array()
     ) {
         $this->em = $doctrine->getManager();
-        $this->securityContext = $securityContext;
+        $this->tokenStorage = $tokenStorage;
         $this->aclConnection = $doctrine->getConnection('default');
         list($this->aclWalker, $this->roleHierarchy) = $options;
     }
@@ -50,7 +50,7 @@ class AclFilter
         $extraCriteria = false
     ) {
         if (null === $identity) {
-            $token = $this->securityContext->getToken();
+            $token = $this->tokenStorage->getToken();
             $identity = $token->getUser();
         }
 
