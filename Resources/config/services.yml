@@ -4,13 +4,13 @@ parameters:
 
 services:
     problematic.acl_manager:
-        class: %problematic.acl_manager.class%
+        class: '%problematic.acl_manager.class%'
         arguments:
-            - "@security.acl.provider"
-            - "@security.token_storage"
-            - "@problematic.acl.object_identity_retrieval_strategy"
-            - "@security.acl.dbal.connection"
+            - '@security.acl.provider'
+            - '@security.token_storage'
+            - '@problematic.acl.object_identity_retrieval_strategy'
+            - '@security.acl.dbal.connection'
 
     problematic.acl.object_identity_retrieval_strategy:
-        class: %problematic.acl_object_identity_retrieval_strategy%
+        class: '%problematic.acl_object_identity_retrieval_strategy%'
         parent: security.acl.object_identity_retrieval_strategy
